@@ -23,5 +23,14 @@
 
     </dependencies>
 
-
+    <distributionManagement>
+        <repository>
+            <id>nexus3</id>
+            <url>http://192.168.254.204:8081/repository/releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>nexus3</id>
+            <url>http://192.168.254.204:8081/repository/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
 </project>

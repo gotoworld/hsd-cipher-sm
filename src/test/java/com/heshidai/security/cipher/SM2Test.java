@@ -56,6 +56,9 @@ public class SM2Test {
         System.out.println("解密: ");
         plainText = new String(SM2Utils.decrypt(Base64.decode(prikS.getBytes()), cipherText));
         System.out.println(plainText);
-
     }
+
+
+
+
 }
