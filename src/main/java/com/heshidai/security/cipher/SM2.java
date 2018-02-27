@@ -12,7 +12,6 @@ import org.bouncycastle.crypto.params.ECPublicKeyParameters;
 import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.math.ec.ECFieldElement;
 import org.bouncycastle.math.ec.ECPoint;
-import org.bouncycastle.math.ec.ECFieldElement.Fp;
 
 public class SM2
 {
@@ -27,14 +26,14 @@ public class SM2
 	};
 
 	// 正式参数
-/*	public static String[] ecc_param = {
-		"FFFFFFFEFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000FFFFFFFFFFFFFFFF",
-		"FFFFFFFEFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000FFFFFFFFFFFFFFFC",
-		"28E9FA9E9D9F5E344D5A9E4BCF6509A7F39789F515AB8F92DDBCBD414D940E93",
-		"FFFFFFFEFFFFFFFFFFFFFFFFFFFFFFFF7203DF6B21C6052B53BBF40939D54123",
-		"32C4AE2C1F1981195F9904466A39C9948FE30BBFF2660BE1715A4589334C74C7",
-		"BC3736A2F4F6779C59BDCEE36B692153D0A9877CC62A474002DF32E52139F0A0"
-	};*/
+//  public static String[] ecc_param = {
+//		"FFFFFFFEFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000FFFFFFFFFFFFFFFF",
+//		"FFFFFFFEFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000FFFFFFFFFFFFFFFC",
+//		"28E9FA9E9D9F5E344D5A9E4BCF6509A7F39789F515AB8F92DDBCBD414D940E93",
+//		"FFFFFFFEFFFFFFFFFFFFFFFFFFFFFFFF7203DF6B21C6052B53BBF40939D54123",
+//		"32C4AE2C1F1981195F9904466A39C9948FE30BBFF2660BE1715A4589334C74C7",
+//		"BC3736A2F4F6779C59BDCEE36B692153D0A9877CC62A474002DF32E52139F0A0"
+//	};
 
 	public static SM2 Instance()
 	{
@@ -63,11 +62,10 @@ public class SM2
 		this.ecc_gx = new BigInteger(ecc_param[4], 16);
 		this.ecc_gy = new BigInteger(ecc_param[5], 16);
 
-		this.ecc_gx_fieldelement = new Fp(this.ecc_p, this.ecc_gx);
-		this.ecc_gy_fieldelement = new Fp(this.ecc_p, this.ecc_gy);
-
 		this.ecc_curve = new ECCurve.Fp(this.ecc_p, this.ecc_a, this.ecc_b);
-		this.ecc_point_g = new ECPoint.Fp(this.ecc_curve, this.ecc_gx_fieldelement, this.ecc_gy_fieldelement);
+    this.ecc_gx_fieldelement = this.ecc_curve.fromBigInteger(this.ecc_gx);
+    this.ecc_gy_fieldelement = this.ecc_curve.fromBigInteger(this.ecc_gy);
+		this.ecc_point_g = this.ecc_curve.createPoint(this.ecc_gx, this.ecc_gy);
 
 		this.ecc_bc_spec = new ECDomainParameters(this.ecc_curve, this.ecc_point_g, this.ecc_n);
 
@@ -99,10 +97,10 @@ public class SM2
 		p = Util.byteConvert32Bytes(ecc_gy);
 		sm3.update(p, 0, p.length);
 
-		p = Util.byteConvert32Bytes(userKey.getX().toBigInteger());
+		p = Util.byteConvert32Bytes(userKey.normalize().getXCoord().toBigInteger());
 		sm3.update(p, 0, p.length);
 
-		p = Util.byteConvert32Bytes(userKey.getY().toBigInteger());
+		p = Util.byteConvert32Bytes(userKey.normalize().getYCoord().toBigInteger());
 		sm3.update(p, 0, p.length);
 
 		byte[] md = new byte[sm3.getDigestSize()];
@@ -133,12 +131,12 @@ public class SM2
 				k = new BigInteger(kS, 16);
 				kp = this.ecc_point_g.multiply(k);
 
-				System.out.println("计算曲线点X1: " + kp.getX().toBigInteger().toString(16));
-				System.out.println("计算曲线点Y1: " + kp.getY().toBigInteger().toString(16));
+				System.out.println("计算曲线点X1: " + kp.normalize().getXCoord().toBigInteger().toString(16));
+				System.out.println("计算曲线点Y1: " + kp.normalize().getYCoord().toBigInteger().toString(16));
 				System.out.println("");
 
 				// r
-				r = e.add(kp.getX().toBigInteger());
+				r = e.add(kp.normalize().getXCoord().toBigInteger());
 				r = r.mod(ecc_n);
 			} while (r.equals(BigInteger.ZERO) || r.add(k).equals(ecc_n));
 
@@ -168,15 +166,15 @@ public class SM2
 		else
 		{
 			ECPoint x1y1 = ecc_point_g.multiply(sm2Result.s);
-			System.out.println("计算曲线点X0: " + x1y1.getX().toBigInteger().toString(16));
-			System.out.println("计算曲线点Y0: " + x1y1.getY().toBigInteger().toString(16));
+			System.out.println("计算曲线点X0: " + x1y1.normalize().getXCoord().toBigInteger().toString(16));
+			System.out.println("计算曲线点Y0: " + x1y1.normalize().getYCoord().toBigInteger().toString(16));
 			System.out.println("");
 
 			x1y1 = x1y1.add(userKey.multiply(t));
-			System.out.println("计算曲线点X1: " + x1y1.getX().toBigInteger().toString(16));
-			System.out.println("计算曲线点Y1: " + x1y1.getY().toBigInteger().toString(16));
+			System.out.println("计算曲线点X1: " + x1y1.normalize().getXCoord().toBigInteger().toString(16));
+			System.out.println("计算曲线点Y1: " + x1y1.normalize().getYCoord().toBigInteger().toString(16));
 			System.out.println("");
-			sm2Result.R = e.add(x1y1.getX().toBigInteger()).mod(ecc_n);
+			sm2Result.R = e.add(x1y1.normalize().getXCoord().toBigInteger()).mod(ecc_n);
 			System.out.println("R: " + sm2Result.R.toString(16));
 			return;
 		}

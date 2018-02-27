@@ -1,7 +1,7 @@
 package com.heshidai.security.cipher;
 
 import org.bouncycastle.util.encoders.Hex;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 public class SM3Test {
 

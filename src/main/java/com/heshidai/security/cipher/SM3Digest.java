@@ -1,7 +1,5 @@
 package com.heshidai.security.cipher;
 
-import org.bouncycastle.util.encoders.Hex;
-
 public class SM3Digest
 {
 	/** SM3值的长度 */
