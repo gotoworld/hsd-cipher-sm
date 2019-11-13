@@ -40,3 +40,10 @@ Chinese Cipher Algorithm
 
 
 FISCO BCOS 支持国产密码算法
+
+* Refer
+标准规范_国家密码管理局 http://www.oscca.gov.cn/sca/xxgk/bzgf.shtml
+国密加密算法有多安全呢 https://www.zhihu.com/question/48777504/answer/133988880
+科普一下SM系列国密算法（从零开始学区块链）http://www.qukuaiwang.com.cn/news/2271.html
+
+
