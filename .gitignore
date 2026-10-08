@@ -22,3 +22,6 @@ catalina.home_IS_UNDEFINED/*
 /bin/
 /logs/*
 .factorypath
+# Standalone consumer build and operating-system metadata
+/examples/target/
+.DS_Store

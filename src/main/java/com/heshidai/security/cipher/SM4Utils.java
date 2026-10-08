@@ -1,188 +1,53 @@
 package com.heshidai.security.cipher;
 
-import java.io.IOException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import com.heshidai.security.cipher.internal.Checks;
+import com.heshidai.security.cipher.internal.TextCodec;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
-import sun.misc.BASE64Decoder;
-import sun.misc.BASE64Encoder;
+/**
+ * Mutable compatibility wrapper for Base64 ECB/CBC text. Not thread-safe.
+ * Defaults to UTF-8. Select GBK explicitly for old data; prefer SM4.seal/open for new data.
+ */
+@Deprecated
+public class SM4Utils {
+    private String secretKey = "";
+    private String iv = "";
+    private boolean hexString;
+    private Charset charset = StandardCharsets.UTF_8;
+    private Charset keyCharset = StandardCharsets.UTF_8;
 
-public class SM4Utils
-{
-	public String getSecretKey() {
-		return secretKey;
-	}
+    public String getSecretKey() { return secretKey; }
+    public void setSecretKey(String value) { secretKey = Checks.required(value, "secret key"); }
+    public String getIv() { return iv; }
+    public void setIv(String value) { iv = Checks.required(value, "IV"); }
+    public boolean isHexString() { return hexString; }
+    public void setHexString(boolean value) { hexString = value; }
+    public Charset getCharset() { return charset; }
+    public void setCharset(Charset value) { charset = Checks.required(value, "charset"); }
+    public Charset getKeyCharset() { return keyCharset; }
+    public void setKeyCharset(Charset value) { keyCharset = Checks.required(value, "key charset"); }
 
-	public void setSecretKey(String secretKey) {
-		this.secretKey = secretKey;
-	}
-
-	public boolean isHexString() {
-		return hexString;
-	}
-
-	public void setHexString(boolean hexString) {
-		this.hexString = hexString;
-	}
-
-	private String secretKey = "";
-
-	public String getIv() {
-		return iv;
-	}
-
-	public void setIv(String iv) {
-		this.iv = iv;
-	}
-
-	private String iv = "";
-
-	private boolean hexString = false;
-
-	public SM4Utils()
-	{
-	}
-
-	public String encryptData_ECB(String plainText)
-	{
-		try
-		{
-			SM4_Context ctx = new SM4_Context();
-			ctx.isPadding = true;
-			ctx.mode = SM4.SM4_ENCRYPT;
-
-			byte[] keyBytes;
-			if (hexString)
-			{
-				keyBytes = Util.hexStringToBytes(secretKey);
-			}
-			else
-			{
-				keyBytes = secretKey.getBytes();
-			}
-
-			SM4 sm4 = new SM4();
-			sm4.sm4_setkey_enc(ctx, keyBytes);
-			byte[] encrypted = sm4.sm4_crypt_ecb(ctx, plainText.getBytes("GBK"));
-			String cipherText = new BASE64Encoder().encode(encrypted);
-			if (cipherText != null && cipherText.trim().length() > 0)
-			{
-				Pattern p = Pattern.compile("\\s*|\t|\r|\n");
-				Matcher m = p.matcher(cipherText);
-				cipherText = m.replaceAll("");
-			}
-			return cipherText;
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-			return null;
-		}
-	}
-
-	public String decryptData_ECB(String cipherText)
-	{
-		try
-		{
-			SM4_Context ctx = new SM4_Context();
-			ctx.isPadding = true;
-			ctx.mode = SM4.SM4_DECRYPT;
-
-			byte[] keyBytes;
-			if (hexString)
-			{
-				keyBytes = Util.hexStringToBytes(secretKey);
-			}
-			else
-			{
-				keyBytes = secretKey.getBytes();
-			}
-
-			SM4 sm4 = new SM4();
-			sm4.sm4_setkey_dec(ctx, keyBytes);
-			byte[] decrypted = sm4.sm4_crypt_ecb(ctx, new BASE64Decoder().decodeBuffer(cipherText));
-			return new String(decrypted, "GBK");
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-			return null;
-		}
-	}
-
-	public String encryptData_CBC(String plainText)
-	{
-		try
-		{
-			SM4_Context ctx = new SM4_Context();
-			ctx.isPadding = true;
-			ctx.mode = SM4.SM4_ENCRYPT;
-
-			byte[] keyBytes;
-			byte[] ivBytes;
-			if (hexString)
-			{
-				keyBytes = Util.hexStringToBytes(secretKey);
-				ivBytes = Util.hexStringToBytes(iv);
-			}
-			else
-			{
-				keyBytes = secretKey.getBytes();
-				ivBytes = iv.getBytes();
-			}
-
-			SM4 sm4 = new SM4();
-			sm4.sm4_setkey_enc(ctx, keyBytes);
-			byte[] encrypted = sm4.sm4_crypt_cbc(ctx, ivBytes, plainText.getBytes("GBK"));
-			String cipherText = new BASE64Encoder().encode(encrypted);
-			if (cipherText != null && cipherText.trim().length() > 0)
-			{
-				Pattern p = Pattern.compile("\\s*|\t|\r|\n");
-				Matcher m = p.matcher(cipherText);
-				cipherText = m.replaceAll("");
-			}
-			return cipherText;
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-			return null;
-		}
-	}
-
-	public String decryptData_CBC(String cipherText)
-	{
-		try
-		{
-			SM4_Context ctx = new SM4_Context();
-			ctx.isPadding = true;
-			ctx.mode = SM4.SM4_DECRYPT;
-
-			byte[] keyBytes;
-			byte[] ivBytes;
-			if (hexString)
-			{
-				keyBytes = Util.hexStringToBytes(secretKey);
-				ivBytes = Util.hexStringToBytes(iv);
-			}
-			else
-			{
-				keyBytes = secretKey.getBytes();
-				ivBytes = iv.getBytes();
-			}
-
-			SM4 sm4 = new SM4();
-			sm4.sm4_setkey_dec(ctx, keyBytes);
-			byte[] decrypted = sm4.sm4_crypt_cbc(ctx, ivBytes, new BASE64Decoder().decodeBuffer(cipherText));
-			return new String(decrypted, "GBK");
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-			return null;
-		}
-	}
-
-
-
+    private byte[] key() { return hexString ? Hex.decode(secretKey) : TextCodec.encode(secretKey, keyCharset); }
+    private byte[] iv() { return hexString ? Hex.decode(iv) : TextCodec.encode(iv, keyCharset); }
+    private byte[] decode(String value) {
+        Checks.required(value, "Base64 ciphertext");
+        // Original encoder emitted line breaks; allow only CR/LF rather than arbitrary ignored characters.
+        return Base64.getDecoder().decode(value.replace("\r", "").replace("\n", ""));
+    }
+    public String encryptData_ECB(String plaintext) {
+        return Base64.getEncoder().encodeToString(SM4.encryptEcb(key(), TextCodec.encode(plaintext, charset), SM4.Padding.PKCS7));
+    }
+    public String decryptData_ECB(String ciphertext) {
+        try { return TextCodec.decode(SM4.decryptEcb(key(), decode(ciphertext), SM4.Padding.PKCS7), charset); }
+        catch (CipherException e) { throw new IllegalArgumentException("SM4 ciphertext could not be decrypted", e); }
+    }
+    public String encryptData_CBC(String plaintext) {
+        return Base64.getEncoder().encodeToString(SM4.encryptCbc(key(), iv(), TextCodec.encode(plaintext, charset), SM4.Padding.PKCS7));
+    }
+    public String decryptData_CBC(String ciphertext) {
+        try { return TextCodec.decode(SM4.decryptCbc(key(), iv(), decode(ciphertext), SM4.Padding.PKCS7), charset); }
+        catch (CipherException e) { throw new IllegalArgumentException("SM4 ciphertext could not be decrypted", e); }
+    }
 }

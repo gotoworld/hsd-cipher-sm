@@ -2,13 +2,15 @@ package com.heshidai.security.cipher;
 
 import java.math.BigInteger;
 
+/** Historical conversion aliases. New code should use Hex and explicit byte-oriented APIs. */
+@Deprecated
 public class Util
 {
     /**
-     * 整形转换成网络传输的字节流（字节数组）型数据
+     * 整型转换为小端字节数组
      *
      * @param num 一个整型数据
-     * @return 4个字节的自己数组
+     * @return 4 字节小端数组
      */
     public static byte[] intToBytes(int num)
     {
@@ -42,10 +44,10 @@ public class Util
     }
 
     /**
-     * 长整形转换成网络传输的字节流（字节数组）型数据
+     * 长整型转换为小端字节数组
      *
      * @param num 一个长整型数据
-     * @return 4个字节的自己数组
+     * @return 8 字节小端数组
      */
     public static byte[] longToBytes(long num)
     {
@@ -61,61 +63,28 @@ public class Util
     /**
      * 大数字转换字节流（字节数组）型数据
      *
-     * @param n
-     * @return
      */
     public static byte[] byteConvert32Bytes(BigInteger n)
     {
-        byte tmpd[] = (byte[])null;
-        if(n == null)
-        {
-            return null;
+        if (n == null || n.signum() < 0 || n.bitLength() > 256) {
+            throw new IllegalArgumentException("Expected an unsigned 256-bit value");
         }
-
-        if(n.toByteArray().length == 33)
-        {
-            tmpd = new byte[32];
-            System.arraycopy(n.toByteArray(), 1, tmpd, 0, 32);
-        }
-        else if(n.toByteArray().length == 32)
-        {
-            tmpd = n.toByteArray();
-        }
-        else
-        {
-            tmpd = new byte[32];
-            for(int i = 0; i < 32 - n.toByteArray().length; i++)
-            {
-                tmpd[i] = 0;
-            }
-            System.arraycopy(n.toByteArray(), 0, tmpd, 32 - n.toByteArray().length, n.toByteArray().length);
-        }
-        return tmpd;
+        return org.bouncycastle.util.BigIntegers.asUnsignedByteArray(32, n);
     }
 
     /**
      * 换字节流（字节数组）型数据转大数字
      *
-     * @param b
-     * @return
      */
     public static BigInteger byteConvertInteger(byte[] b)
     {
-        if (b[0] < 0)
-        {
-            byte[] temp = new byte[b.length + 1];
-            temp[0] = 0;
-            System.arraycopy(b, 0, temp, 1, b.length);
-            return new BigInteger(temp);
-        }
-        return new BigInteger(b);
+        if (b == null || b.length == 0) throw new IllegalArgumentException("Unsigned integer must not be empty");
+        return new BigInteger(1, b);
     }
 
     /**
      * 根据字节数组获得值(十六进制数字)
      *
-     * @param bytes
-     * @return
      */
     public static String getHexString(byte[] bytes)
     {
@@ -125,24 +94,16 @@ public class Util
     /**
      * 根据字节数组获得值(十六进制数字)
      *
-     * @param bytes
-     * @param upperCase
-     * @return
      */
     public static String getHexString(byte[] bytes, boolean upperCase)
     {
-        String ret = "";
-        for (int i = 0; i < bytes.length; i++)
-        {
-            ret += Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1);
-        }
-        return upperCase ? ret.toUpperCase() : ret;
+        String value = Hex.encode(bytes);
+        return upperCase ? value.toUpperCase(java.util.Locale.ROOT) : value;
     }
 
     /**
      * 打印十六进制字符串
      *
-     * @param bytes
      */
     public static void printHexString(byte[] bytes)
     {
@@ -161,39 +122,23 @@ public class Util
     /**
      * Convert hex string to byte[]
      *
-     * @param hexString
      *            the hex string
      * @return byte[]
      */
     public static byte[] hexStringToBytes(String hexString)
     {
-        if (hexString == null || hexString.equals(""))
-        {
-            return null;
-        }
-
-        hexString = hexString.toUpperCase();
-        int length = hexString.length() / 2;
-        char[] hexChars = hexString.toCharArray();
-        byte[] d = new byte[length];
-        for (int i = 0; i < length; i++)
-        {
-            int pos = i * 2;
-            d[i] = (byte) (charToByte(hexChars[pos]) << 4 | charToByte(hexChars[pos + 1]));
-        }
-        return d;
+        return Hex.decode(hexString);
     }
 
     /**
      * Convert char to byte
      *
-     * @param c
      *            char
      * @return byte
      */
     public static byte charToByte(char c)
     {
-        return (byte) "0123456789ABCDEF".indexOf(c);
+        return (byte) Hex.digit(c);
     }
 
     /**
@@ -287,24 +232,8 @@ public class Util
      * @throws RuntimeException 如果源十六进制字符数组是一个奇怪的长度，将抛出运行时异常
      */
     public static byte[] decodeHex(char[] data) {
-        int len = data.length;
-
-        if ((len & 0x01) != 0) {
-            throw new RuntimeException("Odd number of characters.");
-        }
-
-        byte[] out = new byte[len >> 1];
-
-        // two characters form the hex value.
-        for (int i = 0, j = 0; j < len; i++) {
-            int f = toDigit(data[j], j) << 4;
-            j++;
-            f = f | toDigit(data[j], j);
-            j++;
-            out[i] = (byte) (f & 0xFF);
-        }
-
-        return out;
+        if (data == null) throw new IllegalArgumentException("Hex input must not be null");
+        return Hex.decode(new String(data));
     }
 
     /**
@@ -316,18 +245,12 @@ public class Util
      * @throws RuntimeException 当ch不是一个合法的十六进制字符时，抛出运行时异常
      */
     protected static int toDigit(char ch, int index) {
-        int digit = Character.digit(ch, 16);
-        if (digit == -1) {
-            throw new RuntimeException("Illegal hexadecimal character " + ch
-                    + " at index " + index);
-        }
-        return digit;
+        return Hex.digit(ch);
     }
 
     /**
      * 数字字符串转ASCII码字符串
      *
-     * @param String
      *            字符串
      * @return ASCII字符串
      */
@@ -345,9 +268,7 @@ public class Util
     /**
      * 十六进制转字符串
      *
-     * @param hexString
      *            十六进制字符串
-     * @param encodeType
      *            编码类型4：Unicode，2：普通编码
      * @return 字符串
      */
@@ -365,7 +286,6 @@ public class Util
     /**
      * 十六进制字符串装十进制
      *
-     * @param hex
      *            十六进制字符串
      * @return 十进制数值
      */
@@ -389,7 +309,6 @@ public class Util
     /**
      * 十六转二进制
      *
-     * @param hex
      *            十六进制字符串
      * @return 二进制字符串
      */
@@ -456,7 +375,6 @@ public class Util
     /**
      * ASCII码字符串转数字字符串
      *
-     * @param String
      *            ASCII字符串
      * @return 字符串
      */
@@ -476,9 +394,7 @@ public class Util
     /**
      * 将十进制转换为指定长度的十六进制字符串
      *
-     * @param algorism
      *            int 十进制数字
-     * @param maxLength
      *            int 转换后的十六进制字符串长度
      * @return String 转换后的十六进制字符串
      */
@@ -495,7 +411,6 @@ public class Util
     /**
      * 字节数组转为普通字符串（ASCII对应的字符）
      *
-     * @param bytearray
      *            byte[]
      * @return String
      */
@@ -514,7 +429,6 @@ public class Util
     /**
      * 二进制字符串转十进制
      *
-     * @param binary
      *            二进制字符串
      * @return 十进制数值
      */
@@ -532,7 +446,6 @@ public class Util
     /**
      * 十进制转换为十六进制字符串
      *
-     * @param algorism
      *            int 十进制的数字
      * @return String 对应的十六进制字符串
      */
@@ -552,9 +465,7 @@ public class Util
     /**
      * HEX字符串前补0，主要用于长度位数不足。
      *
-     * @param str
      *            String 需要补充长度的十六进制字符串
-     * @param maxLength
      *            int 补充后十六进制字符串的长度
      * @return 补充结果
      */
@@ -570,11 +481,8 @@ public class Util
     /**
      * 将一个字符串转换为int
      *
-     * @param s
      *            String 要转换的字符串
-     * @param defaultInt
      *            int 如果出现异常,默认返回的数字
-     * @param radix
      *            int 要转换的字符串是什么进制的,如16 8 10.
      * @return int 转换后的数字
      */
@@ -591,9 +499,7 @@ public class Util
     /**
      * 将一个十进制形式的数字字符串转换为int
      *
-     * @param s
      *            String 要转换的字符串
-     * @param defaultInt
      *            int 如果出现异常,默认返回的数字
      * @return int 转换后的数字
      */
@@ -614,42 +520,17 @@ public class Util
      */
     public static byte[] hexToByte(String hex)
             throws IllegalArgumentException {
-        if (hex.length() % 2 != 0) {
-            throw new IllegalArgumentException();
-        }
-        char[] arr = hex.toCharArray();
-        byte[] b = new byte[hex.length() / 2];
-        for (int i = 0, j = 0, l = hex.length(); i < l; i++, j++) {
-            String swap = "" + arr[i++] + arr[i];
-            int byteint = Integer.parseInt(swap, 16) & 0xFF;
-            b[j] = new Integer(byteint).byteValue();
-        }
-        return b;
+        return Hex.decode(hex);
     }
 
     /**
      * 字节数组转换为十六进制字符串
      *
-     * @param b
      *            byte[] 需要转换的字节数组
      * @return String 十六进制字符串
      */
     public static String byteToHex(byte b[]) {
-        if (b == null) {
-            throw new IllegalArgumentException(
-                    "Argument b ( byte array ) is null! ");
-        }
-        String hs = "";
-        String stmp = "";
-        for (int n = 0; n < b.length; n++) {
-            stmp = Integer.toHexString(b[n] & 0xff);
-            if (stmp.length() == 1) {
-                hs = hs + "0" + stmp;
-            } else {
-                hs = hs + stmp;
-            }
-        }
-        return hs.toUpperCase();
+        return Hex.encode(b).toUpperCase(java.util.Locale.ROOT);
     }
 
     public static byte[] subByte(byte[] input, int startIndex, int length) {

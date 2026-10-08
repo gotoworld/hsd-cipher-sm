@@ -1,196 +1,78 @@
 package com.heshidai.security.cipher;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import com.heshidai.security.cipher.internal.Sm2Core;
+import com.heshidai.security.cipher.internal.Pem;
 import java.io.IOException;
-import java.math.BigInteger;
-import java.util.Enumeration;
+import java.nio.charset.StandardCharsets;
 
-import com.heshidai.security.cipher.Cipher;
-import org.bouncycastle.asn1.ASN1EncodableVector;
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObject;
-import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DEROutputStream;
-import org.bouncycastle.asn1.DERSequence;
-import org.bouncycastle.math.ec.ECPoint;
-import org.bouncycastle.util.encoders.Base64;
+/** Standard sm2p256v1 operations. Raw private keys contain exactly 32 unsigned bytes. */
+public final class SM2Utils {
+    private SM2Utils() { }
 
-public class SM2Utils
-{
-	public static byte[] encrypt(byte[] publicKey, byte[] data) throws IOException
-	{
-		if (publicKey == null || publicKey.length == 0)
-		{
-			return null;
-		}
+    /** Returns a copy of the common ID; explicit IDs must match the peer's protocol. */
+    public static byte[] defaultUserId() { return "1234567812345678".getBytes(StandardCharsets.US_ASCII); }
 
-		if (data == null || data.length == 0)
-		{
-			return null;
-		}
+    public static SM2KeyPair generateKeyPair() {
+        byte[] key = Sm2Core.generatePrivateKey();
+        return new SM2KeyPair(key, Sm2Core.derivePublicKey(key));
+    }
 
-		byte[] source = new byte[data.length];
-		System.arraycopy(data, 0, source, 0, data.length);
+    public static byte[] publicKeyFromPrivateKey(byte[] key) { return Sm2Core.derivePublicKey(key); }
+    public static byte[] compressPublicKey(byte[] key) { return Sm2Core.compressPublicKey(key); }
+    public static byte[] uncompressPublicKey(byte[] key) { return Sm2Core.uncompressPublicKey(key); }
 
-		Cipher cipher = new Cipher();
-		SM2 sm2 = SM2.Instance();
-		ECPoint userKey = sm2.ecc_curve.decodePoint(publicKey);
+    /** Uses DER SEQUENCE(x,y,C3,C2); empty plaintext is rejected. */
+    public static byte[] encrypt(byte[] publicKey, byte[] plaintext) throws IOException {
+        return encrypt(publicKey, plaintext, SM2CiphertextFormat.DER);
+    }
+    public static byte[] encrypt(byte[] publicKey, byte[] plaintext, SM2CiphertextFormat format) throws IOException {
+        return Sm2Core.encrypt(publicKey, plaintext, format);
+    }
+    public static byte[] decrypt(byte[] privateKey, byte[] ciphertext) throws IOException {
+        return decrypt(privateKey, ciphertext, SM2CiphertextFormat.DER);
+    }
+    public static byte[] decrypt(byte[] privateKey, byte[] ciphertext, SM2CiphertextFormat format) throws CipherException {
+        return Sm2Core.decrypt(privateKey, ciphertext, format);
+    }
+    /** Re-encodes a structurally valid standard-curve ciphertext; does not authenticate it. */
+    public static byte[] convertCiphertext(byte[] ciphertext, SM2CiphertextFormat from, SM2CiphertextFormat to) throws IOException {
+        return Sm2Core.convertCiphertext(ciphertext, from, to);
+    }
 
-		ECPoint c1 = cipher.Init_enc(sm2, userKey);
-		cipher.Encrypt(source);
-		byte[] c3 = new byte[32];
-		cipher.Dofinal(c3);
+    /** Signs SM3(ZA || message) with a fresh cryptographic nonce and canonical DER output. */
+    public static byte[] sign(byte[] userId, byte[] privateKey, byte[] message) throws IOException {
+        return sign(userId, privateKey, message, SM2SignatureFormat.DER);
+    }
+    public static byte[] sign(byte[] userId, byte[] privateKey, byte[] message, SM2SignatureFormat format) throws IOException {
+        return Sm2Core.sign(userId, privateKey, message, format, false);
+    }
+    public static boolean verifySign(byte[] userId, byte[] publicKey, byte[] message, byte[] signature) throws IOException {
+        return verifySign(userId, publicKey, message, signature, SM2SignatureFormat.DER);
+    }
+    public static boolean verifySign(byte[] userId, byte[] publicKey, byte[] message, byte[] signature, SM2SignatureFormat format) {
+        return Sm2Core.verify(userId, publicKey, message, signature, format, false);
+    }
+    public static byte[] convertSignature(byte[] signature, SM2SignatureFormat from, SM2SignatureFormat to) throws IOException {
+        return Sm2Core.convertSignature(signature, from, to);
+    }
+    /** Computes e = SM3(ZA || message) for a hardware or prehashed protocol boundary. */
+    public static byte[] signatureDigest(byte[] userId, byte[] publicKey, byte[] message) {
+        return Sm2Core.signatureDigest(userId, publicKey, message);
+    }
+    /** Advanced API: signs exactly the 32-byte e supplied, with no additional hash or ZA. */
+    public static byte[] signPrecomputedDigest(byte[] privateKey, byte[] digest, SM2SignatureFormat format) throws IOException {
+        return Sm2Core.sign(new byte[0], privateKey, digest, format, true);
+    }
+    public static boolean verifyPrecomputedDigest(byte[] publicKey, byte[] digest, byte[] signature, SM2SignatureFormat format) {
+        return Sm2Core.verify(new byte[0], publicKey, digest, signature, format, true);
+    }
 
-		DERInteger x = new DERInteger(c1.getX().toBigInteger());
-		DERInteger y = new DERInteger(c1.getY().toBigInteger());
-		DEROctetString derDig = new DEROctetString(c3);
-		DEROctetString derEnc = new DEROctetString(source);
-		ASN1EncodableVector v = new ASN1EncodableVector();
-		v.add(x);
-		v.add(y);
-		v.add(derDig);
-		v.add(derEnc);
-		DERSequence seq = new DERSequence(v);
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		DEROutputStream dos = new DEROutputStream(bos);
-		dos.writeObject(seq);
-		return bos.toByteArray();
-	}
-
-	public static byte[] decrypt(byte[] privateKey, byte[] encryptedData) throws IOException
-	{
-		if (privateKey == null || privateKey.length == 0)
-		{
-			return null;
-		}
-
-		if (encryptedData == null || encryptedData.length == 0)
-		{
-			return null;
-		}
-
-		byte[] enc = new byte[encryptedData.length];
-		System.arraycopy(encryptedData, 0, enc, 0, encryptedData.length);
-
-		SM2 sm2 = SM2.Instance();
-		BigInteger userD = new BigInteger(1, privateKey);
-
-		ByteArrayInputStream bis = new ByteArrayInputStream(enc);
-		ASN1InputStream dis = new ASN1InputStream(bis);
-		DERObject derObj = dis.readObject();
-		ASN1Sequence asn1 = (ASN1Sequence) derObj;
-		DERInteger x = (DERInteger) asn1.getObjectAt(0);
-		DERInteger y = (DERInteger) asn1.getObjectAt(1);
-		ECPoint c1 = sm2.ecc_curve.createPoint(x.getValue(), y.getValue(), true);
-
-		Cipher cipher = new Cipher();
-		cipher.Init_dec(userD, c1);
-		DEROctetString data = (DEROctetString) asn1.getObjectAt(3);
-		enc = data.getOctets();
-		cipher.Decrypt(enc);
-		byte[] c3 = new byte[32];
-		cipher.Dofinal(c3);
-		return enc;
-	}
-
-	public static byte[] sign(byte[] userId, byte[] privateKey, byte[] sourceData) throws IOException
-	{
-		if (privateKey == null || privateKey.length == 0)
-		{
-			return null;
-		}
-
-		if (sourceData == null || sourceData.length == 0)
-		{
-			return null;
-		}
-
-		SM2 sm2 = SM2.Instance();
-		BigInteger userD = new BigInteger(privateKey);
-		System.out.println("userD: " + userD.toString(16));
-		System.out.println("");
-
-		ECPoint userKey = sm2.ecc_point_g.multiply(userD);
-		System.out.println("椭圆曲线点X: " + userKey.getX().toBigInteger().toString(16));
-		System.out.println("椭圆曲线点Y: " + userKey.getY().toBigInteger().toString(16));
-		System.out.println("");
-
-		SM3Digest sm3 = new SM3Digest();
-		byte[] z = sm2.sm2GetZ(userId, userKey);
-		System.out.println("SM3摘要Z: " + Util.getHexString(z));
-		System.out.println("");
-
-		System.out.println("M: " + Util.getHexString(sourceData));
-		System.out.println("");
-
-		sm3.update(z, 0, z.length);
-		sm3.update(sourceData, 0, sourceData.length);
-		byte[] md = new byte[32];
-		sm3.doFinal(md, 0);
-
-		System.out.println("SM3摘要值: " + Util.getHexString(md));
-		System.out.println("");
-
-		SM2Result sm2Result = new SM2Result();
-		sm2.sm2Sign(md, userD, userKey, sm2Result);
-		System.out.println("r: " + sm2Result.r.toString(16));
-		System.out.println("s: " + sm2Result.s.toString(16));
-		System.out.println("");
-
-		DERInteger d_r = new DERInteger(sm2Result.r);
-		DERInteger d_s = new DERInteger(sm2Result.s);
-		ASN1EncodableVector v2 = new ASN1EncodableVector();
-		v2.add(d_r);
-		v2.add(d_s);
-		DERObject sign = new DERSequence(v2);
-		byte[] signdata = sign.getDEREncoded();
-		return signdata;
-	}
-
-	@SuppressWarnings("unchecked")
-	public static boolean verifySign(byte[] userId, byte[] publicKey, byte[] sourceData, byte[] signData) throws IOException
-	{
-		if (publicKey == null || publicKey.length == 0)
-		{
-			return false;
-		}
-
-		if (sourceData == null || sourceData.length == 0)
-		{
-			return false;
-		}
-
-		SM2 sm2 = SM2.Instance();
-		ECPoint userKey = sm2.ecc_curve.decodePoint(publicKey);
-
-		SM3Digest sm3 = new SM3Digest();
-		byte[] z = sm2.sm2GetZ(userId, userKey);
-		sm3.update(z, 0, z.length);
-		sm3.update(sourceData, 0, sourceData.length);
-		byte[] md = new byte[32];
-		sm3.doFinal(md, 0);
-		System.out.println("SM3摘要值: " + Util.getHexString(md));
-		System.out.println("");
-
-		ByteArrayInputStream bis = new ByteArrayInputStream(signData);
-		ASN1InputStream dis = new ASN1InputStream(bis);
-		DERObject derObj = dis.readObject();
-		Enumeration<DERInteger> e = ((ASN1Sequence) derObj).getObjects();
-		BigInteger r = ((DERInteger)e.nextElement()).getValue();
-		BigInteger s = ((DERInteger)e.nextElement()).getValue();
-		SM2Result sm2Result = new SM2Result();
-		sm2Result.r = r;
-		sm2Result.s = s;
-		System.out.println("r: " + sm2Result.r.toString(16));
-		System.out.println("s: " + sm2Result.s.toString(16));
-		System.out.println("");
-
-
-		sm2.sm2Verify(md, userKey, sm2Result.r, sm2Result.s, sm2Result);
-		return sm2Result.r.equals(sm2Result.R);
-	}
-
+    public static byte[] publicKeyToSpki(byte[] key) throws IOException { return Sm2Core.exportPublicKey(key); }
+    public static byte[] publicKeyFromSpki(byte[] der) throws IOException { return Sm2Core.importPublicKey(der); }
+    public static byte[] privateKeyToPkcs8(byte[] key) throws IOException { return Sm2Core.exportPrivateKey(key); }
+    public static byte[] privateKeyFromPkcs8(byte[] der) throws IOException { return Sm2Core.importPrivateKey(der); }
+    public static String publicKeyToPem(byte[] key) throws IOException { return Pem.encode("PUBLIC KEY", publicKeyToSpki(key)); }
+    public static byte[] publicKeyFromPem(String pem) throws IOException { return publicKeyFromSpki(Pem.decode("PUBLIC KEY", pem)); }
+    public static String privateKeyToPem(byte[] key) throws IOException { return Pem.encode("PRIVATE KEY", privateKeyToPkcs8(key)); }
+    public static byte[] privateKeyFromPem(String pem) throws IOException { return privateKeyFromPkcs8(Pem.decode("PRIVATE KEY", pem)); }
 }
