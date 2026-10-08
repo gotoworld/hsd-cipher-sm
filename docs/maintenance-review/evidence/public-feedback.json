@@ -1,0 +1,96 @@
+{
+  "retrieved_at": "2026-10-08",
+  "source": "https://api.github.com/repos/gotoworld/hsd-cipher-sm/issues?state=all&per_page=100",
+  "items": [
+    {
+      "number": 10,
+      "title": "sm2签名过程中z值不参与，基于bc库如何实现",
+      "state": "open",
+      "created_at": "2023-11-13T01:48:06Z",
+      "html_url": "https://github.com/gotoworld/hsd-cipher-sm/issues/10",
+      "body": "硬件密码介质，如密码机等，在签名过程中z值不参与，请教下基于bc库如何实现呢？\r\n签名结果不带z值的验签，可参考\r\nhttps://i.goto327.top/CryptTools/SM2.aspx\r\n进行不带Z值签名验证。\r\n请大佬指导下。",
+      "kind": "issue"
+    },
+    {
+      "number": 9,
+      "title": "国密加密包冲突的问题",
+      "state": "open",
+      "created_at": "2020-12-24T03:32:10Z",
+      "html_url": "https://github.com/gotoworld/hsd-cipher-sm/issues/9",
+      "body": "本项目中的国密加密依赖是15版的:\r\n<dependency> \r\n <groupId>org.bouncycastle</groupId> \r\n <artifactId>bcpkix-jdk15on</artifactId> \r\n </dependency> \r\n能否把  依赖升级16版的为:\r\n<artifactId>bcpkix-jdk16on</artifactId> \r\n请教大神?",
+      "kind": "issue"
+    },
+    {
+      "number": 8,
+      "title": "Java端SM2加密，golang无法解密，golang端SM2加密，java无法解密",
+      "state": "open",
+      "created_at": "2020-03-28T13:44:49Z",
+      "html_url": "https://github.com/gotoworld/hsd-cipher-sm/issues/8",
+      "body": "golang端用的国密算法库是：https://github.com/ZZMarquis/gm\r\n对方用的java国密算法库是你的：https://github.com/gotoworld/hsd-cipher-sm\r\n\r\n经过测试后发现：Java端SM2加密，golang无法解密，golang端SM2加密，java无法解密\r\n排查了很久搜索到一篇文章讲解了不同点：https://my.oschina.net/u/2539854/blog/3094186",
+      "kind": "issue"
+    },
+    {
+      "number": 7,
+      "title": "一会用bouncycastle，一会自我实现，感觉乱七八糟的 ？",
+      "state": "open",
+      "created_at": "2019-10-17T05:40:30Z",
+      "html_url": "https://github.com/gotoworld/hsd-cipher-sm/issues/7",
+      "body": "一会用bouncycastle，一会自我实现，感觉乱七八糟的 ？\r\n验证过吗？ \r\n可以用于生产吗， 还是只是练手的 ？",
+      "kind": "issue"
+    },
+    {
+      "number": 6,
+      "title": "Modify pom.xml: add scope=test to junit-jupiter-api",
+      "state": "closed",
+      "created_at": "2019-06-16T10:55:05Z",
+      "html_url": "https://github.com/gotoworld/hsd-cipher-sm/pull/6",
+      "body": "",
+      "kind": "pull_request"
+    },
+    {
+      "number": 5,
+      "title": "add scope to junit-jupiter-api",
+      "state": "closed",
+      "created_at": "2019-06-16T09:28:10Z",
+      "html_url": "https://github.com/gotoworld/hsd-cipher-sm/pull/5",
+      "body": "add \"scope = test\" to dependency \"junit-jupiter-api\"",
+      "kind": "pull_request"
+    },
+    {
+      "number": 4,
+      "title": "bouncycastle",
+      "state": "open",
+      "created_at": "2018-06-08T06:04:48Z",
+      "html_url": "https://github.com/gotoworld/hsd-cipher-sm/issues/4",
+      "body": "你用的哪个版本的bouncycastlejar包，我尝试了很多jar包都提示不存在DERObject",
+      "kind": "issue"
+    },
+    {
+      "number": 3,
+      "title": "[MOD]升级bc库；[MOD]完善单元测试是否通过的判定方式",
+      "state": "closed",
+      "created_at": "2018-02-27T10:31:50Z",
+      "html_url": "https://github.com/gotoworld/hsd-cipher-sm/pull/3",
+      "body": "[MOD]升级bc库；[MOD]完善单元测试是否通过的判定方式",
+      "kind": "pull_request"
+    },
+    {
+      "number": 2,
+      "title": "为什么SM2.java中的ecc_param换成“正式参数”就跑不过了呢？",
+      "state": "closed",
+      "created_at": "2018-02-27T10:18:22Z",
+      "html_url": "https://github.com/gotoworld/hsd-cipher-sm/issues/2",
+      "body": "为什么SM2.java中的ecc_param换成“正式参数”就跑不过了呢？",
+      "kind": "issue"
+    },
+    {
+      "number": 1,
+      "title": "请问如何生成 SM2 的密钥对呢？",
+      "state": "open",
+      "created_at": "2018-01-27T08:26:54Z",
+      "html_url": "https://github.com/gotoworld/hsd-cipher-sm/issues/1",
+      "body": "SM2 的密钥对 privateKey ,publicKey 如何生成呢？\r\n\r\nhow to create SM2 keypair, include privateKey ，publicKey?",
+      "kind": "issue"
+    }
+  ]
+}

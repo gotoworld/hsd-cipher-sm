@@ -1,50 +1,92 @@
-# HSD-CIPHER-SM 
-Chinese Cipher Algorithm
+# HSD CIPHER SM
 
+Java 国密接入与互通工具库，提供标准曲线 SM2、SM3、HMAC-SM3、SM4-GCM，以及显式的历史数据读取。密码运算由 Bouncy Castle 实现，不修改 JVM 全局 provider 配置。
 
-## 国密算法介绍
+当前工作版本：**2.0.0-SNAPSHOT**。这是包含不兼容变更的开发版本，尚未发布到 Maven Central。历史 `1.0-SNAPSHOT` 签名存在固定随机数和私钥输出问题，解密缺少 C3 校验。曾在真实业务使用旧签名路径的用户需要更换相关密钥；升级代码无法恢复旧密钥保密性。参见[迁移说明](docs/MIGRATION.zh-CN.md)和[安全说明](SECURITY.md)。
 
-国密即国家密码局认定的国产密码算法，即商用密码。主要有SM1，SM2，SM3，SM4。密钥长度和分组长度均为128位。
+## 构建与接入
 
-* SM1 为对称加密。其加密强度与AES相当。该算法不公开，调用该算法时，需要通过加密芯片的接口进行调用。
-* SM2为非对称加密，基于ECC。该算法已公开。由于该算法基于ECC，故其签名速度与秘钥生成速度都快于RSA。ECC 256位（SM2采用的就是ECC 256位的一种）安全强度比RSA 2048位高，但运算速度快于RSA。
-* SM3 消息摘要。可以用MD5作为对比理解。该算法已公开。校验结果为256位。
-* SM4 无线局域网标准的分组数据算法。对称加密，密钥长度和分组长度均为128位。
- 
-由于SM1、SM4加解密的分组大小为128bit，故对消息进行加解密时，若消息长度过长，需要进行分组，要消息长度不足，则要进行填充。
+要求 JDK 8 或以上、Maven 3.6.3 或以上。CI 配置覆盖 JDK 8、17、21、25；具体本地验证结果见[验证记录](docs/VERIFICATION.zh-CN.md)。
 
-作为密码学算法，一定要公开接受行业的检验。
+```sh
+mvn -B clean install
+bash examples/run.sh
+```
 
-* 1. 对称算法：                  （DES 3DES AES） --迁移-->   SM1 SM4
+安装到本地 Maven 仓库后，消费者可以使用以下坐标。它不代表该开发版本已经公开发布。
 
-* 2. 非对称密码算法：             (RSA) --迁移-->   SM2(椭圆曲线密码)
+```xml
+<dependency>
+    <groupId>com.heshidai.security</groupId>
+    <artifactId>hsd-cipher-sm</artifactId>
+    <version>2.0.0-SNAPSHOT</version>
+</dependency>
+```
 
-* 3. 散列算法：                   (HASH MD4、MD5 SHA-1、SHA-256、SHA-384、SHA512) --迁移-->   SM3
+依赖 `org.bouncycastle:bcprov-jdk18on:1.86`。应用类路径中应只保留一个 BC 系列；不要同时引入旧的 `bcprov-jdk16`、`bcprov-jdk15on` 等包含同名类的 jar。需要 PKIX 时，保持 `bcpkix`、`bcutil` 与 provider 的系列和版本一致。可用 `mvn dependency:tree -Dincludes=org.bouncycastle` 排查；依赖升级需重新运行互通与迁移测试。
 
+## 快速开始
 
-## 国密算法的面临的机遇和挑战
+以下代码使用 `com.heshidai.security.cipher.*`，示例密钥均临时生成。完整可运行代码见 [QuickStart.java](examples/src/main/java/com/heshidai/security/cipher/examples/QuickStart.java)。
 
-### 1、推广情况说明
-   国家在金融领域启动国产密码算法试点工作以来，国家发改委启动了金融领域安全IC卡及密码关键产品专项支持工作，积极推动产业链发展。目前支持国密算法的软硬件密码产品共699项，包括SSL网关、数字证书认证系统、密钥管理系统、金融数据加密机、签名验签服务器、智能密码钥匙、智能IC卡、PCI密码卡等多种类型，目前已初步形成形式多样、功能互补的产品链，并保持着持续增长的势头。
+```java
+byte[] message = "Hello 国密🙂".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+SM2KeyPair keys = SM2Utils.generateKeyPair();
 
+byte[] ciphertext = SM2Utils.encrypt(keys.getPublicKey(), message);
+byte[] plaintext = SM2Utils.decrypt(keys.getPrivateKey(), ciphertext);
 
-### 2、数字认证系统（CA）的升级改造情况
+byte[] userId = SM2Utils.defaultUserId(); // 必须与对端协议一致
+byte[] signature = SM2Utils.sign(userId, keys.getPrivateKey(), message);
+boolean valid = SM2Utils.verifySign(userId, keys.getPublicKey(), message, signature);
 
-   2015年2月国家商业密码管理办公室发布公告称：根据要求全国第三方电子认证服务机构针对电子认证服务系统和密钥管理系统公钥算法进行了升级改造完毕已经全面支持国产算法，同时各认证服务机构正在积极推动国产算法的应用服务改造，淘汰有安全风险以及低强度的密码算法和产品。北京天威诚信作为最早成立的第三方电子认证服务机构也最早按照国密的要求完成了电子认证服务系统的升级改造，并且同步开始对服务类型的证书应用进行升级改造，目前已经累计完成150余个企业的应用升级工作，使得企业信息系统的安全性得到了极大的提升，也为我们带来了相应的经济效益。
+byte[] hash = SM3.digest(message);
+byte[] dataKey = SM4.generateKey();
+byte[] aad = "record-id-123".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+byte[] sealed = SM4.seal(dataKey, "data-key-2026", message, aad);
+byte[] opened = SM4.open(dataKey, sealed, aad);
+```
 
-### 3、挑战和机遇
+`SM4.seal/open` 使用本项目的版本化数据封装，包含认证的 keyId、随机 nonce 与 tag。它不是 TLS 报文或通用行业文件格式。keyId 不包含密钥；密钥存储和轮换由应用负责。`SM4.envelopeKeyId` 只提供未认证的路由提示，必须在 `open` 成功后才能信任。
 
-   虽然在SSL VPN、数字证书认证系统、密钥管理系统、金融数据加密机、签名验签服务器、智能密码钥匙、智能IC卡、PCI密码卡等产品上改造完毕，但是目前的信息系统整体架构中还有操作系统、数据库、中间件、浏览器、网络设备、负载均衡设备、芯片等软硬件，由于复杂的原因无法完全把密码模块升级为国产密码模块，导致整个信息系统还存在安全薄弱环节。
+大文件摘要直接使用 `SM3.digest(InputStream)`，不会关闭调用方的流。带密钥认证使用独立随机密钥调用 `SM3.hmac(key, message)` 或 `verifyHmac`；普通 SM3 摘要不能代替 MAC。
 
-   作为电子认证机构这个国产密码算法排头兵来说，由于密码服务是信息化安全建设的基础服务，密码的国产化改造和推广就成为我们重要的历史使命。为了普及和推广国产密码我们可以：一方面是产品升级改造，对于国外的产品，通过国产算法的标准出海战略，让国产算法成为国际标准从而国外的产品也就能够支持；对于国产的产品，加快国产算法模块的改造和应用，真正让国产算法为信息系统的安全自主可控；另一方面是应用的宣传和推广，国产算法虽然在安全圈里面是众所周知的事情，但是在其它领域根本就没有听说。所以对于从业者来说，就要不断对用户灌输使用国产密码算法以及尽快升级到国产算法的思想。只有从以上这两个方面入手并且持之以恒，相信国家提出的信息安全领域的自主可控战略最终就会实现。
+## 格式与接口契约
 
+| 内容 | 默认或支持的形式 |
+| --- | --- |
+| SM2 曲线 | 固定 `sm2p256v1`，不自动猜测旧测试曲线 |
+| 原始私钥 | 恰好 32 字节无符号标量；签名范围 1 至 n−2，解密范围 1 至 n−1 |
+| 原始公钥 | 65 字节 `04 || X || Y` 或 33 字节压缩 SEC1 点，拒绝无穷远及 hybrid 编码 |
+| SM2 密文 | 默认 DER `SEQUENCE(x,y,C3,C2)`；可显式选择 `RAW_C1C3C2` 或 `RAW_C1C2C3` |
+| raw 密文 C1 | 恰好 65 字节，包含 `04`；与部分 JS 库交换时注意前缀约定 |
+| SM2 签名 | 默认 canonical DER `(r,s)`；可选 `PLAIN_RS`，即 32 字节 r 与 32 字节 s |
+| SM2 userId | 显式非 null、最多 8191 字节；常见值 `1234567812345678` 仅是便捷选项 |
+| 密钥文件 | 命名 SM2 曲线的 SPKI 公钥、PKCS#8 私钥；DER 或单对象 PEM |
+| 文本 | 密码接口接收 byte[]；SM4Utils 文本默认 UTF-8，GBK 必须显式指定 |
+| SM4-GCM | 16 字节密钥、12 字节 nonce、16 字节 tag、调用方明确提供 AAD |
+| SM4 ECB/CBC | 显式选择 `PKCS7` 或 `NONE`，不提供消息认证，仅用于明确的对接协议 |
 
-FISCO BCOS 支持国产密码算法
+用 `convertCiphertext`、`convertSignature` 转换同一标准曲线下的格式；格式转换不验证密文真实性，也不能跨曲线转换密钥或数据。密钥文件接口包括 `publicKeyToSpki/fromSpki`、`privateKeyToPkcs8/fromPkcs8` 以及对应 PEM 方法。
 
-### Refer
+`signatureDigest(userId, publicKey, message)` 计算 `e = SM3(ZA || message)`。高级接口 `signPrecomputedDigest` 和 `verifyPrecomputedDigest` 接收恰好 32 字节的 e，不再加入 ZA 或计算摘要，供明确的硬件协议使用。不要把原消息、ZA 或仅对消息计算的 SM3 与 e 混用。
 
-* 标准规范_国家密码管理局 http://www.oscca.gov.cn/sca/xxgk/bzgf.shtml
-* 国密加密算法有多安全呢 https://www.zhihu.com/question/48777504/answer/133988880
-* 科普一下SM系列国密算法（从零开始学区块链）http://www.qukuaiwang.com.cn/news/2271.html
+SM2 加密拒绝空明文；签名和 SM3 支持空消息。非法参数抛出 `IllegalArgumentException`；错误密文、校验失败或错误解密密钥抛出 `CipherException`（IOException 的子类），不返回部分明文。验签对无效签名返回 false；无效公钥或 userId 属于参数错误。格式导入失败使用 IOException。SM4Utils 因保留旧方法签名，将解密失败转为 IllegalArgumentException，不再吞异常返回 null。
 
+## 互通与测试
 
+```sh
+mvn -B clean verify
+# PATH 中需要 OpenSSL 3.x；启用后，缺少工具或互通失败会导致测试失败。
+mvn -B clean verify -Dopenssl.integration=true
+```
+
+测试覆盖固定签名向量、SM3 标准向量、SM4 标准分组和百万次迭代向量、RFC 8998 SM4-GCM 向量、格式与解析边界、篡改拒绝、旧曲线/GBK 样本，以及 256 MiB + 1 字节流式摘要。
+
+OpenSSL 测试执行双向 SM2 加解密、双向签名验签、独立生成的密钥导入、SM3/HMAC 和 SM4-CBC 比较。具体命令、格式排查顺序与覆盖边界见[互通指南](docs/INTEROPERABILITY.zh-CN.md)。不能把算法样本通过等同于安全认证或对所有硬件的兼容承诺。
+
+## 迁移与维护
+
+旧曲线读取入口在 `com.heshidai.security.cipher.legacy.LegacySM2`，仅支持 `decrypt` 与 `verifySignature`。旧 GBK 文本通过 `SM4Utils.setCharset(Charset.forName("GBK"))` 显式读取。旧签名生成和未认证的底层 Cipher API 已移除。完整变更见[迁移指南](docs/MIGRATION.zh-CN.md)、[CHANGELOG](CHANGELOG.md)和[原始项目分析](docs/maintenance-review/README.zh-CN.md)。
+
+贡献流程见 [CONTRIBUTING](CONTRIBUTING.md)。公开发布前须完成[发布检查](docs/RELEASING.zh-CN.md)，包括原代码与贡献的权属、许可证和私密安全报告渠道确认。当前未替权利人添加授权声明；许可状态见[许可说明](docs/LICENSING.zh-CN.md)。

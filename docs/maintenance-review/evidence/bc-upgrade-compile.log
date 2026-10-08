@@ -1,0 +1,220 @@
+src/main/java/com/heshidai/security/cipher/SM2Utils.java:13: error: cannot find symbol
+import org.bouncycastle.asn1.DERInteger;
+                            ^
+  symbol:   class DERInteger
+  location: package org.bouncycastle.asn1
+src/main/java/com/heshidai/security/cipher/SM2Utils.java:14: error: cannot find symbol
+import org.bouncycastle.asn1.DERObject;
+                            ^
+  symbol:   class DERObject
+  location: package org.bouncycastle.asn1
+src/main/java/com/heshidai/security/cipher/SM2Utils.java:16: error: DEROutputStream is not public in org.bouncycastle.asn1; cannot be accessed from outside package
+import org.bouncycastle.asn1.DEROutputStream;
+                            ^
+src/main/java/com/heshidai/security/cipher/SM2.java:66: error: constructor Fp in class Fp cannot be applied to given types;
+		this.ecc_gx_fieldelement = new Fp(this.ecc_p, this.ecc_gx);
+		                           ^
+  required: BigInteger,BigInteger,BigInteger
+  found:    BigInteger,BigInteger
+  reason: actual and formal argument lists differ in length
+src/main/java/com/heshidai/security/cipher/SM2.java:67: error: constructor Fp in class Fp cannot be applied to given types;
+		this.ecc_gy_fieldelement = new Fp(this.ecc_p, this.ecc_gy);
+		                           ^
+  required: BigInteger,BigInteger,BigInteger
+  found:    BigInteger,BigInteger
+  reason: actual and formal argument lists differ in length
+src/main/java/com/heshidai/security/cipher/SM2.java:70: error: constructor Fp in class Fp cannot be applied to given types;
+		this.ecc_point_g = new ECPoint.Fp(this.ecc_curve, this.ecc_gx_fieldelement, this.ecc_gy_fieldelement);
+		                   ^
+  required: ECCurve,ECFieldElement,ECFieldElement
+  found:    ECCurve,ECFieldElement,ECFieldElement
+  reason: Fp(ECCurve,ECFieldElement,ECFieldElement) is not public in Fp; cannot be accessed from outside package
+src/main/java/com/heshidai/security/cipher/SM2.java:102: error: cannot find symbol
+		p = Util.byteConvert32Bytes(userKey.getX().toBigInteger());
+		                                   ^
+  symbol:   method getX()
+  location: variable userKey of type ECPoint
+src/main/java/com/heshidai/security/cipher/SM2.java:105: error: cannot find symbol
+		p = Util.byteConvert32Bytes(userKey.getY().toBigInteger());
+		                                   ^
+  symbol:   method getY()
+  location: variable userKey of type ECPoint
+src/main/java/com/heshidai/security/cipher/SM2.java:136: error: cannot find symbol
+				System.out.println("计算曲线点X1: " + kp.getX().toBigInteger().toString(16));
+				                                   ^
+  symbol:   method getX()
+  location: variable kp of type ECPoint
+src/main/java/com/heshidai/security/cipher/SM2.java:137: error: cannot find symbol
+				System.out.println("计算曲线点Y1: " + kp.getY().toBigInteger().toString(16));
+				                                   ^
+  symbol:   method getY()
+  location: variable kp of type ECPoint
+src/main/java/com/heshidai/security/cipher/SM2.java:141: error: cannot find symbol
+				r = e.add(kp.getX().toBigInteger());
+				            ^
+  symbol:   method getX()
+  location: variable kp of type ECPoint
+src/main/java/com/heshidai/security/cipher/SM2.java:171: error: cannot find symbol
+			System.out.println("计算曲线点X0: " + x1y1.getX().toBigInteger().toString(16));
+			                                     ^
+  symbol:   method getX()
+  location: variable x1y1 of type ECPoint
+src/main/java/com/heshidai/security/cipher/SM2.java:172: error: cannot find symbol
+			System.out.println("计算曲线点Y0: " + x1y1.getY().toBigInteger().toString(16));
+			                                     ^
+  symbol:   method getY()
+  location: variable x1y1 of type ECPoint
+src/main/java/com/heshidai/security/cipher/SM2.java:176: error: cannot find symbol
+			System.out.println("计算曲线点X1: " + x1y1.getX().toBigInteger().toString(16));
+			                                     ^
+  symbol:   method getX()
+  location: variable x1y1 of type ECPoint
+src/main/java/com/heshidai/security/cipher/SM2.java:177: error: cannot find symbol
+			System.out.println("计算曲线点Y1: " + x1y1.getY().toBigInteger().toString(16));
+			                                     ^
+  symbol:   method getY()
+  location: variable x1y1 of type ECPoint
+src/main/java/com/heshidai/security/cipher/SM2.java:179: error: cannot find symbol
+			sm2Result.R = e.add(x1y1.getX().toBigInteger()).mod(ecc_n);
+			                        ^
+  symbol:   method getX()
+  location: variable x1y1 of type ECPoint
+src/main/java/com/heshidai/security/cipher/SM2Utils.java:47: error: cannot find symbol
+		DERInteger x = new DERInteger(c1.getX().toBigInteger());
+		^
+  symbol:   class DERInteger
+  location: class SM2Utils
+src/main/java/com/heshidai/security/cipher/SM2Utils.java:47: error: cannot find symbol
+		DERInteger x = new DERInteger(c1.getX().toBigInteger());
+		                   ^
+  symbol:   class DERInteger
+  location: class SM2Utils
+src/main/java/com/heshidai/security/cipher/SM2Utils.java:47: error: cannot find symbol
+		DERInteger x = new DERInteger(c1.getX().toBigInteger());
+		                                ^
+  symbol:   method getX()
+  location: variable c1 of type ECPoint
+src/main/java/com/heshidai/security/cipher/SM2Utils.java:48: error: cannot find symbol
+		DERInteger y = new DERInteger(c1.getY().toBigInteger());
+		^
+  symbol:   class DERInteger
+  location: class SM2Utils
+src/main/java/com/heshidai/security/cipher/SM2Utils.java:48: error: cannot find symbol
+		DERInteger y = new DERInteger(c1.getY().toBigInteger());
+		                   ^
+  symbol:   class DERInteger
+  location: class SM2Utils
+src/main/java/com/heshidai/security/cipher/SM2Utils.java:48: error: cannot find symbol
+		DERInteger y = new DERInteger(c1.getY().toBigInteger());
+		                                ^
+  symbol:   method getY()
+  location: variable c1 of type ECPoint
+src/main/java/com/heshidai/security/cipher/SM2Utils.java:58: error: DEROutputStream is not public in org.bouncycastle.asn1; cannot be accessed from outside package
+		DEROutputStream dos = new DEROutputStream(bos);
+		^
+src/main/java/com/heshidai/security/cipher/SM2Utils.java:58: error: DEROutputStream is not public in org.bouncycastle.asn1; cannot be accessed from outside package
+		DEROutputStream dos = new DEROutputStream(bos);
+		                          ^
+src/main/java/com/heshidai/security/cipher/SM2Utils.java:83: error: cannot find symbol
+		DERObject derObj = dis.readObject();
+		^
+  symbol:   class DERObject
+  location: class SM2Utils
+src/main/java/com/heshidai/security/cipher/SM2Utils.java:85: error: cannot find symbol
+		DERInteger x = (DERInteger) asn1.getObjectAt(0);
+		^
+  symbol:   class DERInteger
+  location: class SM2Utils
+src/main/java/com/heshidai/security/cipher/SM2Utils.java:85: error: cannot find symbol
+		DERInteger x = (DERInteger) asn1.getObjectAt(0);
+		                ^
+  symbol:   class DERInteger
+  location: class SM2Utils
+src/main/java/com/heshidai/security/cipher/SM2Utils.java:86: error: cannot find symbol
+		DERInteger y = (DERInteger) asn1.getObjectAt(1);
+		^
+  symbol:   class DERInteger
+  location: class SM2Utils
+src/main/java/com/heshidai/security/cipher/SM2Utils.java:86: error: cannot find symbol
+		DERInteger y = (DERInteger) asn1.getObjectAt(1);
+		                ^
+  symbol:   class DERInteger
+  location: class SM2Utils
+src/main/java/com/heshidai/security/cipher/SM2Utils.java:117: error: cannot find symbol
+		System.out.println("椭圆曲线点X: " + userKey.getX().toBigInteger().toString(16));
+		                                       ^
+  symbol:   method getX()
+  location: variable userKey of type ECPoint
+src/main/java/com/heshidai/security/cipher/SM2Utils.java:118: error: cannot find symbol
+		System.out.println("椭圆曲线点Y: " + userKey.getY().toBigInteger().toString(16));
+		                                       ^
+  symbol:   method getY()
+  location: variable userKey of type ECPoint
+src/main/java/com/heshidai/security/cipher/SM2Utils.java:143: error: cannot find symbol
+		DERInteger d_r = new DERInteger(sm2Result.r);
+		^
+  symbol:   class DERInteger
+  location: class SM2Utils
+src/main/java/com/heshidai/security/cipher/SM2Utils.java:143: error: cannot find symbol
+		DERInteger d_r = new DERInteger(sm2Result.r);
+		                     ^
+  symbol:   class DERInteger
+  location: class SM2Utils
+src/main/java/com/heshidai/security/cipher/SM2Utils.java:144: error: cannot find symbol
+		DERInteger d_s = new DERInteger(sm2Result.s);
+		^
+  symbol:   class DERInteger
+  location: class SM2Utils
+src/main/java/com/heshidai/security/cipher/SM2Utils.java:144: error: cannot find symbol
+		DERInteger d_s = new DERInteger(sm2Result.s);
+		                     ^
+  symbol:   class DERInteger
+  location: class SM2Utils
+src/main/java/com/heshidai/security/cipher/SM2Utils.java:148: error: cannot find symbol
+		DERObject sign = new DERSequence(v2);
+		^
+  symbol:   class DERObject
+  location: class SM2Utils
+src/main/java/com/heshidai/security/cipher/SM2Utils.java:180: error: cannot find symbol
+		DERObject derObj = dis.readObject();
+		^
+  symbol:   class DERObject
+  location: class SM2Utils
+src/main/java/com/heshidai/security/cipher/SM2Utils.java:181: error: cannot find symbol
+		Enumeration<DERInteger> e = ((ASN1Sequence) derObj).getObjects();
+		            ^
+  symbol:   class DERInteger
+  location: class SM2Utils
+src/main/java/com/heshidai/security/cipher/SM2Utils.java:182: error: cannot find symbol
+		BigInteger r = ((DERInteger)e.nextElement()).getValue();
+		                 ^
+  symbol:   class DERInteger
+  location: class SM2Utils
+src/main/java/com/heshidai/security/cipher/SM2Utils.java:183: error: cannot find symbol
+		BigInteger s = ((DERInteger)e.nextElement()).getValue();
+		                 ^
+  symbol:   class DERInteger
+  location: class SM2Utils
+src/main/java/com/heshidai/security/cipher/Util.java:625: warning: [removal] Integer(int) in Integer has been deprecated and marked for removal
+            b[j] = new Integer(byteint).byteValue();
+                   ^
+src/main/java/com/heshidai/security/cipher/Cipher.java:32: error: cannot find symbol
+        byte p[] = Util.byteConvert32Bytes(p2.getX().toBigInteger());
+                                             ^
+  symbol:   method getX()
+  location: variable p2 of type ECPoint
+src/main/java/com/heshidai/security/cipher/Cipher.java:36: error: cannot find symbol
+        p = Util.byteConvert32Bytes(p2.getY().toBigInteger());
+                                      ^
+  symbol:   method getY()
+  location: variable p2 of type ECPoint
+src/main/java/com/heshidai/security/cipher/Cipher.java:101: error: cannot find symbol
+        byte p[] = Util.byteConvert32Bytes(p2.getY().toBigInteger());
+                                             ^
+  symbol:   method getY()
+  location: variable p2 of type ECPoint
+Note: src/main/java/com/heshidai/security/cipher/SM2.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some messages have been simplified; recompile with -Xdiags:verbose to get full output
+43 errors
+1 warning

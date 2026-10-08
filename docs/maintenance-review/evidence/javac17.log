@@ -1,0 +1,35 @@
+src/main/java/com/heshidai/security/cipher/SM4Utils.java:7: error: cannot find symbol
+import sun.misc.BASE64Decoder;
+               ^
+  symbol:   class BASE64Decoder
+  location: package sun.misc
+src/main/java/com/heshidai/security/cipher/SM4Utils.java:8: error: cannot find symbol
+import sun.misc.BASE64Encoder;
+               ^
+  symbol:   class BASE64Encoder
+  location: package sun.misc
+src/main/java/com/heshidai/security/cipher/SM4Utils.java:67: error: cannot find symbol
+			String cipherText = new BASE64Encoder().encode(encrypted);
+			                        ^
+  symbol:   class BASE64Encoder
+  location: class SM4Utils
+src/main/java/com/heshidai/security/cipher/SM4Utils.java:103: error: cannot find symbol
+			byte[] decrypted = sm4.sm4_crypt_ecb(ctx, new BASE64Decoder().decodeBuffer(cipherText));
+			                                              ^
+  symbol:   class BASE64Decoder
+  location: class SM4Utils
+src/main/java/com/heshidai/security/cipher/SM4Utils.java:137: error: cannot find symbol
+			String cipherText = new BASE64Encoder().encode(encrypted);
+			                        ^
+  symbol:   class BASE64Encoder
+  location: class SM4Utils
+src/main/java/com/heshidai/security/cipher/SM4Utils.java:176: error: cannot find symbol
+			byte[] decrypted = sm4.sm4_crypt_cbc(ctx, ivBytes, new BASE64Decoder().decodeBuffer(cipherText));
+			                                                       ^
+  symbol:   class BASE64Decoder
+  location: class SM4Utils
+src/main/java/com/heshidai/security/cipher/Util.java:625: warning: [removal] Integer(int) in Integer has been deprecated and marked for removal
+            b[j] = new Integer(byteint).byteValue();
+                   ^
+6 errors
+1 warning

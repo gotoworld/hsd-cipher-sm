@@ -1,0 +1,48 @@
+maven17.log
+[INFO] Downloading from central-review: https://repo.maven.apache.org/maven2/org/junit/jupiter/junit-jupiter-api/6.1.3/junit-jupiter-api-6.1.3.pom
+[INFO] Downloaded from central-review: https://repo.maven.apache.org/maven2/org/junit/jupiter/junit-jupiter-api/6.1.3/junit-jupiter-api-6.1.3.pom (3.5 kB at 8.1 kB/s)
+[INFO] Downloading from central-review: https://repo.maven.apache.org/maven2/org/junit/jupiter/junit-jupiter-api/6.1.3/junit-jupiter-api-6.1.3.jar
+[INFO] Downloaded from central-review: https://repo.maven.apache.org/maven2/org/junit/jupiter/junit-jupiter-api/6.1.3/junit-jupiter-api-6.1.3.jar (313 kB at 230 kB/s)
+[ERROR] COMPILATION ERROR :
+[ERROR] Source option 5 is no longer supported. Use 7 or later.
+[ERROR] Target option 5 is no longer supported. Use 7 or later.
+[INFO] BUILD FAILURE
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.1:compile (default-compile) on project hsd-cipher-sm: Compilation failure: Compilation failure:
+[ERROR] Source option 5 is no longer supported. Use 7 or later.
+[ERROR] Target option 5 is no longer supported. Use 7 or later.
+[ERROR] -> [Help 1]
+[ERROR]
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR]
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+
+maven8.log
+[ERROR] COMPILATION ERROR :
+[ERROR] <repo>/src/test/java/com/heshidai/security/cipher/SM2Test.java:[6,29] cannot access org.junit.jupiter.api.Test
+  bad class file: <maven-cache>/org/junit/jupiter/junit-jupiter-api/6.1.3/junit-jupiter-api-6.1.3.jar(org/junit/jupiter/api/Test.class)
+[INFO] BUILD FAILURE
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.1:testCompile (default-testCompile) on project hsd-cipher-sm: Compilation failure
+[ERROR] <repo>/src/test/java/com/heshidai/security/cipher/SM2Test.java:[6,29] cannot access org.junit.jupiter.api.Test
+[ERROR]   bad class file: <maven-cache>/org/junit/jupiter/junit-jupiter-api/6.1.3/junit-jupiter-api-6.1.3.jar(org/junit/jupiter/api/Test.class)
+[ERROR]     class file has wrong version 61.0, should be 52.0
+[ERROR]     Please remove or make sure it appears in the correct subdirectory of the classpath.
+[ERROR] -> [Help 1]
+[ERROR]
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR]
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+
+maven8-pinned-junit.log
+[INFO] Downloading from central-review: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-junit3/2.12.4/surefire-junit3-2.12.4.pom
+[INFO] Downloaded from central-review: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-junit3/2.12.4/surefire-junit3-2.12.4.pom (1.7 kB at 3.9 kB/s)
+[INFO] Downloading from central-review: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-junit3/2.12.4/surefire-junit3-2.12.4.jar
+[INFO] Downloaded from central-review: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-junit3/2.12.4/surefire-junit3-2.12.4.jar (26 kB at 47 kB/s)
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.059 sec
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.041 sec
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 sec
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
